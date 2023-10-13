@@ -2,7 +2,7 @@ import webbrowser
 import requests
 from bs4 import BeautifulSoup
 
-url = 'https://www.eltiempo.com/justicia/delitos/emilio-tapia-es-declarado-exento-de-responsabilidad-fiscal-en-caso-de-centros-poblados-815563'
+url = 'https://www.ibiza-spotlight.es/magazine/2023/01/ibiza-virgins-guide-melodic-techno'
 
 try:
     response = requests.get(url)
@@ -12,17 +12,18 @@ try:
 
         soup = BeautifulSoup(content, 'html.parser')
 
-        # Encontrar la etiqueta "article" y extraer su contenido
-        article_tag = soup.find('article')
+        article_tag = soup.find('main')
 
         if article_tag:
             article_text = ''
 
-            for element in article_tag.stripped_strings:
-                if str(element) == ".":
-                    del element
-                else:
-                    article_text += element + '\n\n'
+            # Definir etiquetas a omitir
+            tags_to_exclude = ['iframe', 'img', 'ul', 'li']
+
+            for element in article_tag.descendants:
+                if element.name not in tags_to_exclude:
+                    if element.string:
+                        article_text += element.string.strip() + '\n'
 
             with open('output.html', 'w', encoding='utf-8') as file:
                 file.write('<!DOCTYPE html>\n<html>')
@@ -35,7 +36,7 @@ try:
             print('El contenido del artículo se ha guardado en "output.html"')
             webbrowser.open('output.html')
         else:
-            print('No se encontró la etiqueta "article" en la página.')
+            print('No se encontró la etiqueta "main" en la página.')
     else:
         print(f'La solicitud a {url} falló con el código de estado {response.status_code}')
 
